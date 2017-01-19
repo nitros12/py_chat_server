@@ -1,0 +1,4 @@
+{
+  "welcome_message":"Client: {peer} connected to {server_name}! There are currently {numclients} users connected",
+  "server_name":"TestingServer"
+}
