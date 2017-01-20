@@ -1,5 +1,5 @@
 import asyncio
-
+import json
 from autobahn.asyncio.websocket import WebSocketServerFactory
 from config import config
 from protocol import PyIrcProtocol
@@ -22,6 +22,16 @@ class IrcFactory(WebSocketServerFactory):
         for i in self.clients:
             i.send(payload, isBinary)
 
+    async def sendAll_simple(self, message):
+        message = json.dumps(message).encode("utf-8")
+        await self.sendAll(message)
+
+    async def kick(self, clientID):
+        for i in self.clients:
+            if str(id(i)) == clientID:
+                await self.sendAll_simple(f"Kicked client {i.name} from server")
+                i.handle.sendClose()
+                break
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
@@ -32,8 +42,8 @@ if __name__ == '__main__':
     server = loop.run_until_complete(coro)
     try:
         loop.run_forever()
-    except:
-        pass
+    except Exception as e:
+        print(e)
     finally:
         server.close()
         loop.close()

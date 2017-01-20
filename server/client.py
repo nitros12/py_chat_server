@@ -17,6 +17,7 @@ class client:
         self.handle = handle
         self.name = ""
         self.perms = clientPerms.send | clientPerms.recv  # default perms
+        print("client init")
 
     def setName(self, name):
         self.name = name
@@ -38,13 +39,14 @@ class client:
             True  -> if own perms > other perms
             False -> otherwise
         """
-        return self.perms > other.perms
+        print(f"{self.perms} | {other}")
 
-    def __eq__(self, other):
         if isinstance(other, client):
-            return self.handle == other.handle
-        elif isinstance(other, self.handle):  # comparing with a handler
-            return self.handle == other
+            return self.perms > other.perms
+
+        elif isinstance(other, clientPerms):
+            return self.perms > other
+
 
     def send(self, payload, isBinary):
         self.handle.sendMessage(payload, isBinary)
