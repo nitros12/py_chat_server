@@ -17,6 +17,7 @@ class client:
         self.handle = handle
         self.name = ""
         self.perms = clientPerms.send | clientPerms.recv  # default perms
+        self.channel = None
         print("client init")
 
     def setName(self, name):
@@ -50,3 +51,9 @@ class client:
 
     def send(self, payload, isBinary):
         self.handle.sendMessage(payload, isBinary)
+
+    def sendSimple(self, message):
+        self.handle.simpleMessage(message)
+
+    def set_channel(self, channel):
+        self.channel = channel

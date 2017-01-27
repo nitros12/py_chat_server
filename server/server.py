@@ -1,4 +1,5 @@
 import asyncio
+from channel import Channel
 import json
 from autobahn.asyncio.websocket import WebSocketServerFactory
 from config import config
@@ -13,10 +14,17 @@ except ImportError:
 
 
 class IrcFactory(WebSocketServerFactory):
-    def __init__(self, name="server", *args, **kwargs):
+    def __init__(self, name="server", channels=[], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.clients = []
         self.name = name
+        self.channels = {i: Channel(i) for i in channels}
+
+    def set_channel(self, client, channelName):
+        self.channels[channelName].insert(client)
+
+    def create_channel(self, name):
+        self.channels[name] = Channel(name)
 
     async def sendAll(self, payload, isBinary=False):
         for i in self.clients:
@@ -35,7 +43,7 @@ class IrcFactory(WebSocketServerFactory):
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
-    factory = IrcFactory(name=config["server_name"], loop=loop)
+    factory = IrcFactory(name=config["server_name"], loop=loop, channels=["home", "second"])
     factory.protocol = PyIrcProtocol
 
     coro = loop.create_server(factory, port=8081)

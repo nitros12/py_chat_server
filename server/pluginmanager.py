@@ -13,18 +13,23 @@ class pluginType:
         cmd, *args = funcstr.split()
         isafunc = await self.call_func(client, cmd, *args)
         if not isafunc:
-            await client.handle.factory.sendAll_simple(funcstr)
+            if client.channel is None:
+                client.handle.simpleMessage(f"You are not connected to any channel, type '/join <channel>' to join a channel. A list of available channels is on /clist")
+            else:
+                client.channel.sendAllSimple(funcstr) #await client.handle.factory.sendAll_simple(funcstr)
 
     async def call_func(self, client, cmd, *args):
-        plugin = self.plugins.get(cmd)
-        if plugin is not None:
-            if iscoroutinefunction(plugin):
-                await plugin(client, *args)
-            else:
-                plugin(client, *args)
+        if cmd.startswith("/"):
+            plugin = self.plugins.get(cmd[1:])
+            if plugin is not None:
+                if iscoroutinefunction(plugin):
+                    await plugin(client, *args)
+                else:
+                    plugin(client, *args)
 
-            return True
+                return True
         return False
+
 
 def perms_for(perms):
     def predicate(func):
@@ -67,7 +72,15 @@ async def addperms(client, *args):
             client.addPerm(permDict[i])
 
 @plugins
-async def listUsers(client, *args):
+async def ulist(client, *args):
     for c, i in enumerate(client.handle.factory.clients):
         client.handle.simpleMessage(f"Client #{c}, {i.name}, {id(i)}")
 
+@plugins
+async def join(client, *args):
+    if args[0] in client.handle.factory.channels:
+        client.handle.factory.set_channel(client, args[0])
+
+@plugins
+async def clist(client, *args):
+    client.sendSimple(", ".join(client.handle.factory.channels))
