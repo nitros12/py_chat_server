@@ -12,14 +12,10 @@ from config import config
 
 class PyIrcProtocol(WebSocketServerProtocol):
 
-    def formatMsg(self, msg):
-        return msg.format(peer=self.peer, numclients=len(self.factory.clients), server_name=self.factory.name)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.plugins = pluginmanager.plugins
         self.client = client(self)
-        print("protoinit")
 
     def simpleMessage(self, message):
         print(message)
@@ -31,15 +27,11 @@ class PyIrcProtocol(WebSocketServerProtocol):
 
     async def onOpen(self):
         print(f"Client {self} opened")
-        await self.factory.sendAll(json.dumps(self.formatMsg(config["welcome_message"])).encode("utf-8"))
+        await self.factory.sendAllSimple("Client: {peer} connected to {server_name}! There are currently {numclients} users connected".format(peer=self.peer, numclients=len(self.factory.clients), server_name=self.factory.name))
 
     async def onClose(self, wasClean, code, reason):
         self.factory.clients.remove(self.client)
-        await self.factory.sendAll_simple(f"<Client: {self.client.name} disconnected from server>")
-
+        await self.factory.sendAllSimple(f"<Client: {self.client.name} disconnected from server>")
 
     async def onMessage(self, payload, isBinary):
-
-        # TODO: message -> decode -> plugins
         await self.plugins.generate_func(self.client, payload.decode("utf-8"))
-        #await self.factory.sendAll(payload, isBinary)

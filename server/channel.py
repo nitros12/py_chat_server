@@ -7,13 +7,14 @@ class Channel:
     def insert(self, client):
         if client.channel is not None:
             client.channel.remove(client)
-        client.set_channel(self)
+        client.setChannel(self)
         self.members_.add(client)
         self.sendAllSimple(f"User <{client.name}> has joined {self.name}!")
 
     def remove(self, client):
-        client.set_channel(None)
+        client.setChannel(None)
         self.members_.remove(client)
+        self.sendAllSimple(f"User <{client.name}> has left {self.name}")
 
     @property
     def members(self):
