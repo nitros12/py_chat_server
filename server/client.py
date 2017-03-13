@@ -2,11 +2,11 @@ import enum
 
 
 class clientPerms(enum.IntFlag):
-    send = 1 << 0
-    recv = 1 << 1
-    kick = 1 << 2
-    ban = 1 << 3
-    servmod = 1 << 4
+    recv = enum.auto()
+    send = enum.auto()
+    kick = enum.auto()
+    ban = enum.auto()
+    servmod = enum.auto()
 
 
 DEFAULT_PERMS = clientPerms.send | clientPerms.recv
@@ -19,6 +19,32 @@ class client:
         self.name = ""
         self.perms = clientPerms.send | clientPerms.recv  # default perms
         self.channel = None
+
+    @property
+    def prefix(self):
+        """
+        Get prefix for client
+        """
+        highest_perm = self.highest_perm
+
+        return {
+            clientPerms.servmod: "+++",
+            clientPerms.ban: "++",
+            clientPerms.kick: "-",
+            clientPerms.send: "@"
+        }[highest_perm]
+
+    @property
+    def highest_perm(self):
+        """
+        Extract highest permission from the group of permissions
+        """
+        for i in reversed(self.perms.__class__):
+            if i in self.perms:
+                return i
+
+    def __str__(self):
+        return f"{self.prefix}{self.name}"
 
     def setName(self, name):
         self.name = name
@@ -40,7 +66,6 @@ class client:
             True  -> if own perms > other perms
             False -> otherwise
         """
-        print(f"{self.perms} | {other}")
 
         if isinstance(other, client):
             return self.perms > other.perms
